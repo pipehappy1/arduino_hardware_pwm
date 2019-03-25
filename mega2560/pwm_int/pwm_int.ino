@@ -1,4 +1,8 @@
 // fast PWM on mega2560
+// https://www.microchip.com/webdoc/AVRLibcReferenceManual/group__avr__interrupts.html
+// http://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
+
+int led_flag = HIGH;
 
 void setup() {
   // put your setup code here, to run once:
@@ -21,8 +25,8 @@ void setup() {
   TCCR3A |= (1 << WGM31);
   TCCR3B |= (1 << WGM32);
   // clk/1024
-  //TCCR3B |= (1 << CS32)|(1 << CS30);
-  TCCR3B |= (1 << CS30);
+  TCCR3B |= (1 << CS32)|(1 << CS30);
+  //TCCR3B |= (1 << CS30);
 
   // non-inverting mode.  
   TCCR3A |= (1 << COM3A1); 
@@ -34,6 +38,10 @@ void setup() {
   TCCR3A |= (1 << COM3C1);
   OCR3C = 170;
 
+  // enable TIMER3_OVF_vect ISR
+  //TIMSK3 |= (1 << TOIE3);
+  TIMSK3 |= (1 << OCIE3A);
+
   interrupts();
 }
 
@@ -42,3 +50,22 @@ void loop() {
   
 }
 
+ISR(TIMER3_OVF_vect) {
+  if (led_flag == HIGH) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    led_flag = LOW;
+  } else {
+    digitalWrite(LED_BUILTIN, LOW);
+    led_flag = HIGH;
+  }
+}
+
+ISR(TIMER3_COMPA_vect) {
+  if (led_flag == HIGH) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    led_flag = LOW;
+  } else {
+    digitalWrite(LED_BUILTIN, LOW);
+    led_flag = HIGH;
+  }
+}
